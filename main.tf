@@ -1,12 +1,12 @@
 resource "aws_sns_topic" "cost_anomaly_topic" {
-  count = var.existing_sns_topic == "" ? 0 : 1
+  count = var.sns_topic_arn == "" ? 0 : 1
   name              = "${var.name}-topic"
   kms_master_key_id = var.SNS_KMS_key
   tags              = var.tags
 }
 
 data "aws_iam_policy_document" "sns_topic_policy_document" {
-  count = var.existing_sns_topic == "" ? 0 : 1
+  count = var.sns_topic_arn == "" ? 0 : 1
   policy_id = "${var.name}-policy-ID"
 
   statement {
@@ -24,16 +24,16 @@ data "aws_iam_policy_document" "sns_topic_policy_document" {
     }
 
     resources = [
-      aws_sns_topic.cost_anomaly_topic.arn,
+      aws_sns_topic.cost_anomaly_topic[0].arn,
     ]
   }
 }
 
 resource "aws_sns_topic_policy" "sns_topic_policy" {
-  count = var.existing_sns_topic == "" ? 0 : 1
-  arn = aws_sns_topic.cost_anomaly_topic.arn
+  count = var.sns_topic_arn == "" ? 0 : 1
+  arn = aws_sns_topic.cost_anomaly_topic[0].arn
 
-  policy = data.aws_iam_policy_document.sns_topic_policy_document.json
+  policy = data.aws_iam_policy_document.sns_topic_policy_document[0].json
 }
 
 resource "aws_ce_anomaly_monitor" "anomaly_monitor" {
@@ -61,7 +61,7 @@ resource "aws_ce_anomaly_subscription" "anomaly_subscription" {
 
   subscriber {
     type    = "SNS"
-    address = var.existing_sns_topic == "" ? aws_sns_topic.cost_anomaly_topic.arn : var.existing_sns_topic
+    address = var.sns_topic_arn == "" ? aws_sns_topic.cost_anomaly_topic[0].arn : var.sns_topic_arn
   }
 
   depends_on = [
@@ -78,7 +78,7 @@ resource "awscc_chatbot_slack_channel_configuration" "chatbot_slack_channel" {
   slack_channel_id   = var.slack_channel_id
   slack_workspace_id = var.slack_workspace_id
   guardrail_policies = ["arn:aws:iam::aws:policy/ReadOnlyAccess", ]
-  sns_topic_arns     = [aws_sns_topic.cost_anomaly_topic.arn]
+  sns_topic_arns     = [var.sns_topic_arn == "" ? aws_sns_topic.cost_anomaly_topic[0].arn: var.sns_topic_arn]
 }
 
 data "aws_iam_policy_document" "chatbot_channel_policy_document" {
