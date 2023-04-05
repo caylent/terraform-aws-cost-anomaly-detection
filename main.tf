@@ -1,10 +1,12 @@
 resource "aws_sns_topic" "cost_anomaly_topic" {
+  count = var.existing_sns_topic == "" ? 0 : 1
   name              = "${var.name}-topic"
   kms_master_key_id = var.SNS_KMS_key
   tags              = var.tags
 }
 
 data "aws_iam_policy_document" "sns_topic_policy_document" {
+  count = var.existing_sns_topic == "" ? 0 : 1
   policy_id = "${var.name}-policy-ID"
 
   statement {
@@ -28,6 +30,7 @@ data "aws_iam_policy_document" "sns_topic_policy_document" {
 }
 
 resource "aws_sns_topic_policy" "sns_topic_policy" {
+  count = var.existing_sns_topic == "" ? 0 : 1
   arn = aws_sns_topic.cost_anomaly_topic.arn
 
   policy = data.aws_iam_policy_document.sns_topic_policy_document.json
@@ -58,7 +61,7 @@ resource "aws_ce_anomaly_subscription" "anomaly_subscription" {
 
   subscriber {
     type    = "SNS"
-    address = aws_sns_topic.cost_anomaly_topic.arn
+    address = var.existing_sns_topic == "" ? aws_sns_topic.cost_anomaly_topic.arn : var.existing_sns_topic
   }
 
   depends_on = [
