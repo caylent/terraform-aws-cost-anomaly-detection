@@ -90,7 +90,7 @@ data "aws_iam_policy_document" "chatbot_channel_policy_document" {
                 "sns:Subscribe",
                 "sns:ListSubscriptions"
             ]
-    resources = ["*"]
+    resources = [var.sns_topic_arn == "" ? aws_sns_topic.cost_anomaly_topic[0].arn : var.sns_topic_arn]
   }
   statement {
     actions = [
@@ -100,7 +100,7 @@ data "aws_iam_policy_document" "chatbot_channel_policy_document" {
               "logs:CreateLogGroup",
               "logs:DescribeLogGroups"
           ]
-    resources = ["arn:aws:logs:*:*:log-group:/aws/chatbot/*"]
+    resources = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/chatbot/*"]
   }
 }
 
