@@ -2,9 +2,22 @@
 This module leverages [AWS Cost Anomaly Detector](https://aws.amazon.com/aws-cost-management/aws-cost-anomaly-detection/) to identify unusual cost patterns in AWS and notify them inmediately.
 It creates a Cost Anomaly Monitor, a Cost Anomaly Subscription, a SNS topic, and optionally a slack channel configuration on AWS ChatBot.
 
-**AWS Cost Anomaly Monitor** Monitors the AWS account for unexpected costs. This module uses AWS' recomended configuration to evaluate each of the services you use individually, allowing smaller anomalies to be detected. Anomaly thresholds are automatically adjusted based on your historical service spend patterns.
+**AWS Cost Anomaly Monitor** it can be configured to monitor a single AWS account for unexpected costs or multiple accounts. Anomaly thresholds are automatically adjusted based on your historical service spend patterns.
+Monitoring several accounts is the default mode. A list of accounts must be provided. Make sure this is module deployed in the root account of the organization in order to monitor all the accounts that belong to it.
+In case a single account must be monitored, set the input variable *multi_account* to false.
 
 **Cost Anomaly Subscription** send an alert to SNS when cost monitor detects an anomaly and a threshold is exceeded. The threshold is configurable and it can be a fixed amount or a percentage.
+To monitor anomalies and alert based on the cost impact, set the *threshold_type* input variable to ANOMALY_TOTAL_IMPACT_ABSOLUTE.
+In order to receive alerts based on percentage with respect to previous periods, set *threshold_type* to ANOMALY_TOTAL_IMPACT_PERCENTAGE.
+
+**Important Note:** the later will not alert in case o an spike on a service for which the normal usage is 0$. As it can't calculate the impact percentage. It's recommended to used absolute values to avoid missing alerts.
+
+In case there's an existing SNS - Chatbot integration, set *enable_slack_integration* to false, and provide the SNS topic ARN through the *sns_topic_arn* input parameter. Alerts will be sent to the provided SNS topic rather than creating a new one.
+ 
+
+[AWS documentation](https://aws.amazon.com/es/aws-cost-management/resources/slack-integrations-for-aws-cost-anomaly-detection-using-aws-chatbot/)
+
+**Diagram**
 
 ![diagram](docs/images/cost_monitor_diagram.png "diagram")
 
