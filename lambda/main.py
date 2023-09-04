@@ -89,7 +89,7 @@ def calculate_cost(start_date, end_date, client, mode):
 
 def calculate_dates():
     """
-    Calculates dates. firts day and last day of month
+    Calculates dates to be used in the calculate_costs function. First day and last day of month
     """
     logger.info('Calculating cost')
     today = datetime.now()
